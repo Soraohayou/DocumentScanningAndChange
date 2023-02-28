@@ -4,6 +4,9 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven {url 'https://developer.huawei.com/repo/'}
+        maven { url 'https://jitpack.io' }
+        maven {url "https://repository.aspose.com/repo/" }
+        maven {url "https://releases.aspose.com/java/repo/" }
     }
 }
 dependencyResolutionManagement {
@@ -12,6 +15,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {url 'https://developer.huawei.com/repo/'}
+        maven { url 'https://jitpack.io' }
+        maven {url "https://repository.aspose.com/repo/" }
+        maven {url "https://releases.aspose.com/java/repo/" }
     }
 }
 rootProject.name = "DocumentScanningAndChange"

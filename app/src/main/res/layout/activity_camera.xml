@@ -1,0 +1,60 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="20dp"
+    android:gravity="center_horizontal"
+    tools:context=".MainActivity">
+
+    <com.freddy.silhouette.widget.button.SleImageButton
+        android:id="@+id/image"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="64dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.9"
+        app:strokeWidth="1dp"
+        app:strokeColor="#D6D6D6"/>
+
+    <ImageView
+        android:id="@+id/imagebtn"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="48dp"
+        android:src="@mipmap/camera2"
+        app:layout_constraintEnd_toStartOf="@id/save"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/image" />
+
+    <ImageView
+        android:id="@+id/save"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:src="@mipmap/save"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imagebtn"
+        app:layout_constraintTop_toTopOf="@id/imagebtn" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/imagebtn"
+        app:layout_constraintEnd_toEndOf="@id/imagebtn"
+        app:layout_constraintTop_toBottomOf="@id/imagebtn"
+        android:layout_marginTop="12dp"
+        android:text="拍照"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/save"
+        app:layout_constraintEnd_toEndOf="@id/save"
+        app:layout_constraintTop_toBottomOf="@id/save"
+        android:layout_marginTop="12dp"
+        android:text="保存"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

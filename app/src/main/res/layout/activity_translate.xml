@@ -1,9 +1,103 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TranslateActivity">
+    android:layout_margin="20dp"
+    android:gravity="center_horizontal"
+    tools:context=".MainActivity">
+
+    <com.freddy.silhouette.widget.button.SleImageButton
+        android:id="@+id/image"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="64dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.9"
+        app:strokeColor="#D6D6D6"
+        app:strokeWidth="1dp" />
+
+    <ImageView
+        android:id="@+id/imagebtn"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="24dp"
+        android:src="@mipmap/camera2"
+        app:layout_constraintEnd_toStartOf="@id/translate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/image" />
+
+    <ImageView
+        android:id="@+id/translate"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:src="@mipmap/translate2"
+        app:layout_constraintEnd_toStartOf="@id/recording"
+        app:layout_constraintStart_toEndOf="@id/imagebtn"
+        app:layout_constraintTop_toTopOf="@id/imagebtn" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="拍照"
+        app:layout_constraintEnd_toEndOf="@id/imagebtn"
+        app:layout_constraintStart_toStartOf="@id/imagebtn"
+        app:layout_constraintTop_toBottomOf="@id/imagebtn" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="翻译"
+        app:layout_constraintEnd_toEndOf="@id/translate"
+        app:layout_constraintStart_toStartOf="@id/translate"
+        app:layout_constraintTop_toBottomOf="@id/translate" />
+
+    <ImageView
+        android:id="@+id/recording"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:src="@mipmap/recording"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/translate"
+        app:layout_constraintTop_toTopOf="@id/imagebtn" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="语音"
+        app:layout_constraintEnd_toEndOf="@id/recording"
+        app:layout_constraintStart_toStartOf="@id/recording"
+        app:layout_constraintTop_toBottomOf="@id/recording" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/result"
+        app:layout_constraintStart_toStartOf="@id/result"
+        android:layout_marginStart="12dp"
+        android:text="语音翻译结果:"
+        android:layout_marginBottom="12dp"/>
+
+    <com.freddy.silhouette.widget.button.SleTextButton
+        android:id="@+id/result"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="84dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:sle_normalBackgroundColor="#FAFAFA"
+        app:sle_cornersRadius="12dp"
+        app:sle_strokeWidth="1dp"
+        app:sle_normalStrokeColor="#B8B8B8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/translate" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

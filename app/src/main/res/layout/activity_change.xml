@@ -6,4 +6,143 @@
     android:layout_height="match_parent"
     tools:context=".ChangeActivity">
 
+    <com.freddy.silhouette.widget.layout.SleConstraintLayout
+        android:id="@+id/a"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="36dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:sle_cornersRadius="10dp"
+        app:sle_normalBackgroundColor="#FFFFF1"
+        app:sle_normalStrokeColor="#757575"
+        app:sle_strokeWidth="0.5dp">
+
+        <LinearLayout
+            android:id="@+id/c"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@id/d"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/from_type_image"
+                android:layout_width="48dp"
+                android:layout_height="48dp" />
+
+            <TextView
+                android:id="@+id/from_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="36dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="36dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/d"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/c">
+
+            <com.freddy.silhouette.widget.button.SleTextButton
+                android:id="@+id/from_select"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="18dp"
+                android:paddingTop="9dp"
+                android:paddingEnd="18dp"
+                android:paddingBottom="9dp"
+                android:text="选择文件"
+                app:sle_cornersRadius="10dp"
+                app:sle_normalBackgroundColor="#E4E4E4"
+                app:sle_normalStrokeColor="#757575"
+                app:sle_strokeWidth="0.5dp" />
+
+            <com.freddy.silhouette.widget.button.SleTextButton
+                android:id="@+id/from_preview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:paddingStart="18dp"
+                android:paddingTop="9dp"
+                android:paddingEnd="18dp"
+                android:paddingBottom="9dp"
+                android:text="浏览文件夹"
+                app:sle_cornersRadius="10dp"
+                app:sle_normalBackgroundColor="#E4E4E4"
+                app:sle_normalStrokeColor="#757575"
+                app:sle_strokeWidth="0.5dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/f"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/d">
+
+            <com.freddy.silhouette.widget.button.SleTextButton
+                android:id="@+id/from_change"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="18dp"
+                android:paddingTop="9dp"
+                android:paddingEnd="18dp"
+                android:paddingBottom="9dp"
+                android:text="转         换"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/d"
+                app:layout_constraintStart_toStartOf="@id/d"
+                app:layout_constraintTop_toBottomOf="@id/d"
+                app:sle_cornersRadius="10dp"
+                app:sle_normalBackgroundColor="#E4E4E4"
+                app:sle_normalStrokeColor="#757575"
+                app:sle_strokeWidth="0.5dp" />
+
+            <com.freddy.silhouette.widget.button.SleTextButton
+                android:id="@+id/from_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:paddingStart="18dp"
+                android:paddingTop="9dp"
+                android:paddingEnd="18dp"
+                android:paddingBottom="9dp"
+                android:text="删            除"
+                app:sle_cornersRadius="10dp"
+                app:sle_normalBackgroundColor="#E4E4E4"
+                app:sle_normalStrokeColor="#757575"
+                app:sle_strokeWidth="0.5dp" />
+        </LinearLayout>
+
+    </com.freddy.silhouette.widget.layout.SleConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/b"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="48dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/a" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
