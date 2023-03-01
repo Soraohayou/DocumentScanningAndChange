@@ -1,29 +1,68 @@
 package com.example.documentscanningandchange;
 
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.aspose.cells.PdfCompliance;
 import com.aspose.cells.PdfSaveOptions;
 import com.aspose.cells.Workbook;
 import com.aspose.words.Document;
 import com.aspose.words.SaveFormat;
 import com.freddy.silhouette.widget.button.SleTextButton;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.layout.Canvas;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Text;
 import com.maxvision.tbs.TbsUtils;
 import com.zlylib.fileselectorlib.FileSelector;
 import com.zlylib.fileselectorlib.bean.EssFile;
 import com.zlylib.fileselectorlib.utils.Const;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class ScanActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -39,6 +78,8 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
     private int currentChangeType;
 
     private EssFile from, to;
+
+    private Uri photoUri;
 
     private SleTextButton from_select, from_preview, to_select, to_preview;
 
@@ -62,10 +103,11 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
         from_preview.setOnClickListener(this);
         to_select.setOnClickListener(this);
         to_preview.setOnClickListener(this);
-        findViewById(R.id.scan).setOnClickListener(this);
+        findViewById(R.id.change).setOnClickListener(this);
         findViewById(R.id.choose_type).setOnClickListener(this);
         findViewById(R.id.from_delete).setOnClickListener(this);
         findViewById(R.id.to_delete).setOnClickListener(this);
+        findViewById(R.id.scan).setOnClickListener(this);
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -118,11 +160,12 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 TbsUtils.loadFileType(this, to.getAbsolutePath(), to.getName());
                 break;
-            case R.id.scan:
+            case R.id.change:
                 if (to == null) {
                     Toast.makeText(this, "还未选择目标文件夹!", Toast.LENGTH_SHORT).show();
                     return;
                 }
+
                 if (from == null) {
                     Toast.makeText(this, "还未选择目标文件!", Toast.LENGTH_SHORT).show();
                     return;
@@ -262,6 +305,27 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                 ((TextView) findViewById(R.id.to_name)).setText("");
                 to = null;
                 break;
+            case R.id.scan:
+
+                if (to == null) {
+                    Toast.makeText(this, "还未选择目标文件夹!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                File file = new File(getExternalFilesDir(null), "outputimage.jpg");
+                Log.d("fuck", file.getAbsolutePath());
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                photoUri = FileProvider.getUriForFile(this, "com.example.documentscanningandchange.fileprovider", file);
+
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(intent, 99);
+
+                break;
         }
     }
 
@@ -295,7 +359,155 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                 ((TextView) findViewById(R.id.to_name)).setText(to.getAbsolutePath());
                 ((ImageView) findViewById(R.id.to_type_image)).setImageResource(R.mipmap.folder);
             }
+        } else if (requestCode == 99) {
+            if (resultCode == RESULT_OK) {
+                try {
+                    ContentResolver contentResolver = getContentResolver();
+                    Bitmap bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(photoUri));
+                    Toast.makeText(this, "转换中，请稍等", Toast.LENGTH_SHORT).show();
+                    scanBitmap(this, bitmap);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
         }
+    }
+
+    public void scanBitmap(Context activity, Bitmap bitmap) {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("image", bitmapToBase64(bitmap)).build();
+        Request request = new Request.Builder().url("https://aip.baidubce.com/rest/2.0/ocr/v1/doc_analysis_office?access_token=" + MyApplication.token).post(requestBody).build();
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+
+                    JSONObject result = JSONObject.parseObject(response.body().string());
+                    if (!result.containsKey("error_code")) {
+                        String new_url;
+                        Log.d(TAG, "doPostAsync: " + result);
+                        if (to.isDirectory()) {
+                            new_url = to.getAbsolutePath() + "扫描结果.pdf";
+                        } else {
+                            new_url = to.getAbsolutePath().replace(to.getName(), "") + "扫描结果.pdf";
+                        }
+
+                        String DEST2 = new_url;//文件路径
+                        PdfFont sysFont = null;//中文设置
+                        sysFont = PdfFontFactory.createFont("STSongStd-Light", "UniGB-UCS2-H", false);
+                        PdfDocument pdfDoc = new PdfDocument(new com.itextpdf.kernel.pdf.PdfWriter(DEST2));
+                        com.itextpdf.layout.Document doc = new com.itextpdf.layout.Document(pdfDoc);//构建文档对象
+                        PageSize pageSize = new PageSize(bitmap.getHeight(), bitmap.getWidth());
+                        pdfDoc.addNewPage();
+                        Log.i(TAG, "onResponse: " + bitmap.getWidth() + "    " + bitmap.getHeight());
+
+                        doc.getPdfDocument().setDefaultPageSize(pageSize);
+                       /* PdfPage page = pdfDoc.addNewPage();
+                        PdfCanvas pdfCanvas = new PdfCanvas(page);
+                        Rectangle[] columns = {new Rectangle(6, 650, 100, 30)};  //几个Rectangle对应几个位置
+                        pdfCanvas.rectangle(columns[0]);
+                        Canvas canvas = new Canvas(pdfCanvas, pdfDoc, columns[0]);
+                        Paragraph p = new Paragraph("hssssas").setBold();   //Bold为设置粗体
+                        canvas.add(p);*/
+
+                        Text text = new Text(String.format("Page %d", pdfDoc.getNumberOfPages() - 1));
+                        //前面这个text主要是设置背景色为白色，如果text的位置上面有内容就会覆盖掉内容
+                        doc.add(new Paragraph(text).setFixedPosition(
+                                pdfDoc.getNumberOfPages(), 549, 742, 100)); //这里面width取决于留空的宽度，这里我们尽量取大一点
+
+                        doc.add(new Paragraph(text).setFixedPosition(
+                                pdfDoc.getNumberOfPages(), 449, 642, 100)); //这里面width取决于留空的宽度，这里我们尽量取大一点
+
+                        /*Paragraph paragraph = new Paragraph(""); //段落方法
+                        paragraph.setFont(sysFont);//自定义中文
+                        doc.add(paragraph);//段落添加到文档中*/
+
+                        JSONObject word, word_location;
+
+                        try {
+                            /*JSONArray words = result.getJSONArray("results");
+                            for (int i = 0; i < 1; i++) {
+
+                                word = words.getJSONObject(i).getJSONObject("words");
+                                word_location = word.getJSONObject("words_location");
+
+                                Log.i(TAG, "onResponse: " + word_location.getIntValue("left"));
+                                Log.i(TAG, "onResponse: " + word_location.getIntValue("top"));
+                                Log.i(TAG, "onResponse: " + word_location.getIntValue("width"));
+                                Log.i(TAG, "onResponse: " + word.getString("word"));
+                                Log.i(TAG, "onResponse: --------------------------------------- ");
+
+                                Text text = new Text(word.getString("word"));
+                                //前面这个text主要是设置背景色为白色，如果text的位置上面有内容就会覆盖掉内容  word_location.getIntValue("left") word_location.getIntValue("top")
+
+                                doc.add(new Paragraph(text).setFont(sysFont).setFixedPosition(pdfDoc.getNumberOfPages(), word_location.getIntValue("left") >> 2, word_location.getIntValue("left") >> 2, word_location.getIntValue("width")));
+
+                            }*/
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            runOnUiThread(() -> {
+                                Toast.makeText(activity, "扫描失败！", Toast.LENGTH_SHORT).show();
+                            });
+                            return;
+                        } finally {
+                            doc.close();//关闭文档流
+                        }
+                        runOnUiThread(() -> {
+                            Toast.makeText(activity, "扫描完成！", Toast.LENGTH_SHORT).show();
+                            to = new EssFile(new_url);
+                            ((ImageView) findViewById(R.id.to_type_image)).setImageResource(R.mipmap.pdf);
+                            ((TextView) findViewById(R.id.to_name)).setText(new_url);
+                        });
+
+
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(activity, "图片不清晰！", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    /*
+     * bitmap转base64
+     * */
+    private static String bitmapToBase64(Bitmap bitmap) {
+        String result = null;
+        ByteArrayOutputStream baos = null;
+        try {
+            if (bitmap != null) {
+                baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+
+                baos.flush();
+                baos.close();
+
+                byte[] bitmapBytes = baos.toByteArray();
+                result = Base64.encodeToString(bitmapBytes, Base64.DEFAULT);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (baos != null) {
+                    baos.flush();
+                    baos.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 
 }

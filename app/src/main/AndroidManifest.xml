@@ -29,6 +29,19 @@
         android:name=".MyApplication"
         android:theme="@style/Theme.DocumentScanningAndChange"
         tools:targetApi="31">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.documentscanningandchange.fileprovider"
+            android:exported="false"
+            tools:replace="android:authorities"
+            android:grantUriPermissions="true">
+            <meta-data
+                tools:replace="android:resource"
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/files" />
+        </provider>
+
         <activity
             android:name=".CameraActivity"
             android:exported="false" />
