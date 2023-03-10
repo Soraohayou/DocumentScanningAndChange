@@ -34,13 +34,13 @@
             <ImageView
                 android:layout_width="72dp"
                 android:layout_height="72dp"
-                android:src="@mipmap/scan" />
+                android:src="@drawable/file" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="扫描"
+                android:text="文档处理"
                 android:textColor="#515151"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -77,13 +77,13 @@
             <ImageView
                 android:layout_width="72dp"
                 android:layout_height="72dp"
-                android:src="@mipmap/change" />
+                android:src="@drawable/image" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="转换"
+                android:text="图片处理"
                 android:textColor="#515151"
                 android:textSize="16sp"
                 android:textStyle="bold" />

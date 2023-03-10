@@ -1,14 +1,18 @@
 package com.example.documentscanningandchange;
 
+import static com.example.documentscanningandchange.TranslateActivity.compressScale;
+
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -34,12 +38,7 @@ import com.freddy.silhouette.widget.button.SleTextButton;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfPage;
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-import com.itextpdf.layout.Canvas;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
 import com.maxvision.tbs.TbsUtils;
@@ -50,14 +49,11 @@ import com.zlylib.fileselectorlib.utils.Const;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -108,6 +104,12 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.from_delete).setOnClickListener(this);
         findViewById(R.id.to_delete).setOnClickListener(this);
         findViewById(R.id.scan).setOnClickListener(this);
+        /*findViewById(R.id.scan).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scanBitmap(ScanActivity.this, drawableToBitamp(getResources().getDrawable(R.drawable.a)));
+            }
+        });*/
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -183,12 +185,27 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
 
                         Document document = new Document(from.getAbsolutePath());
                         if (currentChangeType == CHANGE_TYPE_PDF) {
+
                             // word 转pdf
                             if (to.isDirectory()) {
-                                new_url = to.getAbsolutePath() + from.getName().replace("docx", "pdf");
+
+                                if (from.getAbsolutePath().contains("docx")) {
+                                    new_url = to.getAbsolutePath() + from.getName().replace("docx", "pdf");
+                                } else {
+                                    new_url = to.getAbsolutePath() + from.getName().replace("doc", "pdf");
+                                }
                             } else {
-                                new_url = to.getAbsolutePath().replace(from.getName(), "") + from.getName().replace("docx", "pdf");
+                                if (from.getAbsolutePath().contains("docx")) {
+                                    new_url = to.getAbsolutePath().substring(0,to.getAbsolutePath().lastIndexOf("/")+1) + from.getName().replace("docx", "pdf");
+                                } else {
+                                    new_url = to.getAbsolutePath().substring(0,to.getAbsolutePath().lastIndexOf("/")+1) + from.getName().replace("doc", "pdf");
+                                }
                             }
+
+                            if (new File(new_url).exists()) {
+                                new File(new_url).delete();
+                            }
+
                             ((ImageView) findViewById(R.id.to_type_image)).setImageResource(R.mipmap.word);
                             document.save(new_url, SaveFormat.PDF);
                         } else if (currentChangeType == CHANGE_TYPE_EXCEL) {
@@ -204,7 +221,7 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                             if (to.isDirectory()) {
                                 new_url = to.getAbsolutePath() + from.getName().replace("xlsx", "doc");
                             } else {
-                                new_url = to.getAbsolutePath().replace(from.getName(), "") + from.getName().replace("xlsx", "doc");
+                                new_url = to.getAbsolutePath().substring(0,to.getAbsolutePath().lastIndexOf("/")+1) + from.getName().replace("xlsx", "doc");
                             }
                             workbook.save(new_url, com.aspose.cells.SaveFormat.DOCX);
                             ((ImageView) findViewById(R.id.to_type_image)).setImageResource(R.mipmap.word);
@@ -215,7 +232,7 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                             if (to.isDirectory()) {
                                 new_url = to.getAbsolutePath() + from.getName().replace("xlsx", "pdf");
                             } else {
-                                new_url = to.getAbsolutePath().replace(from.getName(), "") + from.getName().replace("xlsx", "pdf");
+                                new_url = to.getAbsolutePath().substring(0,to.getAbsolutePath().lastIndexOf("/")+1) + from.getName().replace("xlsx", "pdf");
                             }
                             PdfSaveOptions options = new PdfSaveOptions();
                             options.setCompliance(PdfCompliance.PDF_A_1_A);// Save the document in PDF format
@@ -228,7 +245,7 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
 
                         if (currentChangeType == CHANGE_TYPE_WORD) {
                             Toast.makeText(this, "pdf无法转换为word", Toast.LENGTH_SHORT).show();
-                          /*  if (to.isDirectory()) {
+                            /*if (to.isDirectory()) {
                                 new_url = to.getAbsolutePath() + from.getName().replace("pdf", "docx");
                             } else {
                                 new_url = to.getAbsolutePath().replace(from.getName(), "") + from.getName().replace("pdf", "docx");
@@ -241,7 +258,7 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                             if (to.isDirectory()) {
                                 new_url = to.getAbsolutePath() + from.getName().replace("pdf", "xlsx");
                             } else {
-                                new_url = to.getAbsolutePath().replace(from.getName(), "") + from.getName().replace("pdf", "xlsx");
+                                new_url = to.getAbsolutePath().substring(0,to.getAbsolutePath().lastIndexOf("/")+1) + from.getName().replace("pdf", "xlsx");
                             }
                             pdf.save(new_url, com.aspose.pdf.SaveFormat.Excel);
                             ((ImageView) findViewById(R.id.to_type_image)).setImageResource(R.mipmap.word);
@@ -363,7 +380,7 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == RESULT_OK) {
                 try {
                     ContentResolver contentResolver = getContentResolver();
-                    Bitmap bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(photoUri));
+                    Bitmap bitmap = compressScale(BitmapFactory.decodeStream(contentResolver.openInputStream(photoUri)));
                     Toast.makeText(this, "转换中，请稍等", Toast.LENGTH_SHORT).show();
                     scanBitmap(this, bitmap);
                 } catch (FileNotFoundException e) {
@@ -371,11 +388,13 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
 
-
         }
     }
 
     public void scanBitmap(Context activity, Bitmap bitmap) {
+
+        Log.i(TAG, "scanBitmap: bitmap: width=" + bitmap.getWidth() + "   height=" + bitmap.getHeight());
+
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("image", bitmapToBase64(bitmap)).build();
         Request request = new Request.Builder().url("https://aip.baidubce.com/rest/2.0/ocr/v1/doc_analysis_office?access_token=" + MyApplication.token).post(requestBody).build();
@@ -389,10 +408,19 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
 
+                    int a = bitmap.getWidth();
+                    int b = 549;
+                    double widthScale = Math.round(b * 100 / a) / 100.0;
+                    ;
+
+                    int c = bitmap.getHeight();
+                    int d = 820;
+                    double heightScale = Math.round(d * 100 / c) / 100.0;
+
                     JSONObject result = JSONObject.parseObject(response.body().string());
+                    Log.d(TAG, "doPostAsync: " + result);
                     if (!result.containsKey("error_code")) {
                         String new_url;
-                        Log.d(TAG, "doPostAsync: " + result);
                         if (to.isDirectory()) {
                             new_url = to.getAbsolutePath() + "扫描结果.pdf";
                         } else {
@@ -405,35 +433,15 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                         PdfDocument pdfDoc = new PdfDocument(new com.itextpdf.kernel.pdf.PdfWriter(DEST2));
                         com.itextpdf.layout.Document doc = new com.itextpdf.layout.Document(pdfDoc);//构建文档对象
                         PageSize pageSize = new PageSize(bitmap.getHeight(), bitmap.getWidth());
+                        doc.getPdfDocument().setDefaultPageSize(pageSize);
                         pdfDoc.addNewPage();
                         Log.i(TAG, "onResponse: " + bitmap.getWidth() + "    " + bitmap.getHeight());
-
-                        doc.getPdfDocument().setDefaultPageSize(pageSize);
-                       /* PdfPage page = pdfDoc.addNewPage();
-                        PdfCanvas pdfCanvas = new PdfCanvas(page);
-                        Rectangle[] columns = {new Rectangle(6, 650, 100, 30)};  //几个Rectangle对应几个位置
-                        pdfCanvas.rectangle(columns[0]);
-                        Canvas canvas = new Canvas(pdfCanvas, pdfDoc, columns[0]);
-                        Paragraph p = new Paragraph("hssssas").setBold();   //Bold为设置粗体
-                        canvas.add(p);*/
-
-                        Text text = new Text(String.format("Page %d", pdfDoc.getNumberOfPages() - 1));
-                        //前面这个text主要是设置背景色为白色，如果text的位置上面有内容就会覆盖掉内容
-                        doc.add(new Paragraph(text).setFixedPosition(
-                                pdfDoc.getNumberOfPages(), 549, 742, 100)); //这里面width取决于留空的宽度，这里我们尽量取大一点
-
-                        doc.add(new Paragraph(text).setFixedPosition(
-                                pdfDoc.getNumberOfPages(), 449, 642, 100)); //这里面width取决于留空的宽度，这里我们尽量取大一点
-
-                        /*Paragraph paragraph = new Paragraph(""); //段落方法
-                        paragraph.setFont(sysFont);//自定义中文
-                        doc.add(paragraph);//段落添加到文档中*/
 
                         JSONObject word, word_location;
 
                         try {
-                            /*JSONArray words = result.getJSONArray("results");
-                            for (int i = 0; i < 1; i++) {
+                            JSONArray words = result.getJSONArray("results");
+                            for (int i = 0; i < words.size(); i++) {
 
                                 word = words.getJSONObject(i).getJSONObject("words");
                                 word_location = word.getJSONObject("words_location");
@@ -447,9 +455,9 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                                 Text text = new Text(word.getString("word"));
                                 //前面这个text主要是设置背景色为白色，如果text的位置上面有内容就会覆盖掉内容  word_location.getIntValue("left") word_location.getIntValue("top")
 
-                                doc.add(new Paragraph(text).setFont(sysFont).setFixedPosition(pdfDoc.getNumberOfPages(), word_location.getIntValue("left") >> 2, word_location.getIntValue("left") >> 2, word_location.getIntValue("width")));
+                                doc.add(new Paragraph(text).setFont(sysFont).setFixedPosition(pdfDoc.getNumberOfPages(), word_location.getIntValue("left"), bitmap.getHeight() - word_location.getIntValue("top"), word_location.getIntValue("width")));
 
-                            }*/
+                            }
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -509,5 +517,27 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
         }
         return result;
     }
+
+    private Bitmap drawableToBitamp(Drawable drawable) {
+        //声明将要创建的bitmap
+        Bitmap bitmap = null;
+        //获取图片宽度
+        int width = drawable.getIntrinsicWidth();
+        //获取图片高度
+        int height = drawable.getIntrinsicHeight();
+        //图片位深，PixelFormat.OPAQUE代表没有透明度，RGB_565就是没有透明度的位深，否则就用ARGB_8888。详细见下面图片编码知识。
+        Bitmap.Config config = drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
+        //创建一个空的Bitmap
+        bitmap = Bitmap.createBitmap(width, height, config);
+        //在bitmap上创建一个画布
+        Canvas canvas = new Canvas(bitmap);
+        //设置画布的范围
+        drawable.setBounds(0, 0, width, height);
+        //将drawable绘制在canvas上
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
+    // 去水印
 
 }
